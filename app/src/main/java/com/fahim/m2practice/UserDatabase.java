@@ -15,14 +15,10 @@ public abstract class UserDatabase extends RoomDatabase {
 
     public static UserDatabase getInstance(final Context context) {
         if (instance == null) {
-            synchronized (UserDatabase.class) {
-                if (instance == null) {
-                    instance = Room.databaseBuilder(context.getApplicationContext(),
-                                    UserDatabase.class, "user_database")
-                            .fallbackToDestructiveMigration()
-                            .build();
-                }
-            }
+            instance = Room.databaseBuilder(context.getApplicationContext(),
+                            UserDatabase.class, "user_database")
+                    .fallbackToDestructiveMigration()
+                    .build();
         }
         return instance;
     }
