@@ -1,14 +1,20 @@
 package com.fahim.m2practice;
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.DatePicker;
+import android.widget.EditText;
+import android.widget.TextView;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.Observer;
 
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -16,6 +22,10 @@ public class MainActivity extends AppCompatActivity {
 
     UserDatabase database;
     ExecutorService executorService = Executors.newSingleThreadExecutor();
+    EditText editTextText;
+    Button select_date;
+    Button submit;
+    String date = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -30,14 +40,35 @@ public class MainActivity extends AppCompatActivity {
 
         database = UserDatabase.getInstance(this);
         Button submit = findViewById(R.id.submit);
+        EditText editTextText = findViewById(R.id.editTextText);
+        Button select_date = findViewById(R.id.select_date);
+        select_date.setOnClickListener(view -> {
+            DatePickerDialog dialog = new DatePickerDialog(this);
+            dialog.setOnDateSetListener((datePicker, year, month, day) -> date = day + "/" + (month + 1) + "/" + year);
+            dialog.show();
+        });
+
         submit.setOnClickListener(view -> {
             UserData userObject = new UserData();
-            userObject.Username = "Fahim";
-            userObject.dateOfbirth = "12/12/2000";
+            userObject.Username = editTextText.getText().toString();
+            userObject.dateOfbirth = date;
             executorService.execute(() -> {
                 database.userDao().insert(userObject);
             });
         });
+
+        database.userDao().getAllUsers().observe(this, new Observer<List<UserData>>() {
+            @Override
+            public void onChanged(List<UserData> userData) {
+                StringBuilder result = new StringBuilder();
+                for (UserData user : userData) {
+                    result.append(user.Username + "-" + user.dateOfbirth + "\n");
+                }
+                TextView textView = findViewById(R.id.result);
+                textView.setText(result.toString());
+            }
+        });
+
 
     }
 }

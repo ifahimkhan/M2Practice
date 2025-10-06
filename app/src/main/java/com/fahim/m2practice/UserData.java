@@ -12,7 +12,7 @@ public class UserData {
     public String Username;
     public String dateOfbirth;
 
-    /*@NonNull
+    @NonNull
     @Override
     public String toString() {
         return "UserData{" +
@@ -20,5 +20,5 @@ public class UserData {
                 ", Username='" + Username + '\'' +
                 ", dateOfbirth='" + dateOfbirth + '\'' +
                 '}';
-    }*/
+    }
 }
