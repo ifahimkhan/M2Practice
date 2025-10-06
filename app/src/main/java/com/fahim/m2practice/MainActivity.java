@@ -2,8 +2,8 @@ package com.fahim.m2practice;
 
 import android.app.DatePickerDialog;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -21,12 +21,14 @@ import java.util.concurrent.Executors;
 public class MainActivity extends AppCompatActivity {
 
     UserDatabase database;
+
     ExecutorService executorService = Executors.newSingleThreadExecutor();
     EditText editTextText;
     Button select_date;
     Button submit;
     String date = "";
 
+    //    Button delete;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,10 +44,19 @@ public class MainActivity extends AppCompatActivity {
         Button submit = findViewById(R.id.submit);
         EditText editTextText = findViewById(R.id.editTextText);
         Button select_date = findViewById(R.id.select_date);
+        Button delete = findViewById(R.id.delete);
         select_date.setOnClickListener(view -> {
             DatePickerDialog dialog = new DatePickerDialog(this);
             dialog.setOnDateSetListener((datePicker, year, month, day) -> date = day + "/" + (month + 1) + "/" + year);
             dialog.show();
+        });
+        delete.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                executorService.execute(() -> {
+                    database.userDao().delete(Integer.parseInt(editTextText.getText().toString()));
+                });
+            }
         });
 
         submit.setOnClickListener(view -> {
@@ -56,19 +67,18 @@ public class MainActivity extends AppCompatActivity {
                 database.userDao().insert(userObject);
             });
         });
-
         database.userDao().getAllUsers().observe(this, new Observer<List<UserData>>() {
             @Override
             public void onChanged(List<UserData> userData) {
                 StringBuilder result = new StringBuilder();
                 for (UserData user : userData) {
-                    result.append(user.Username + "-" + user.dateOfbirth + "\n");
+                    result.append(user.srno + "-" + user.Username + "-" + user.dateOfbirth + "\n");
                 }
                 TextView textView = findViewById(R.id.result);
                 textView.setText(result.toString());
             }
         });
 
-
     }
+
 }

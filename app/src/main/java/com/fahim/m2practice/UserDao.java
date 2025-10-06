@@ -11,6 +11,13 @@ import java.util.List;
 public interface UserDao {
     @Insert
     void insert(UserData userObject);
+
     @Query("SELECT * FROM UserData")
     LiveData<List<UserData>> getAllUsers();
+
+    @Query("DELETE FROM UserData WHERE srno = :srno")
+    void delete(int srno);
+
 }
+
+
