@@ -1,37 +1,29 @@
 package com.fahim.m2practice;
 
 import android.app.DatePickerDialog;
+import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
+import android.widget.DatePicker;
 import android.widget.TextView;
+import android.widget.TimePicker;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.lifecycle.Observer;
-
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class MainActivity extends AppCompatActivity {
 
-    UserDatabase database;
+    String dateString = "";
+    String timeString = "";
 
-    ExecutorService executorService = Executors.newSingleThreadExecutor();
-    EditText editTextText;
-    Button select_date;
-    Button submit;
-    String date = "";
-
-    //    Button delete;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -39,46 +31,57 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+        Button datePicker = findViewById(R.id.date_picker);
+        Button timePicker = findViewById(R.id.time_picker);
+        Button write = findViewById(R.id.write);
+        Button read = findViewById(R.id.read);
+        TextView result = findViewById(R.id.textView);
 
-        database = UserDatabase.getInstance(this);
-        Button submit = findViewById(R.id.submit);
-        EditText editTextText = findViewById(R.id.editTextText);
-        Button select_date = findViewById(R.id.select_date);
-        Button delete = findViewById(R.id.delete);
-        select_date.setOnClickListener(view -> {
-            DatePickerDialog dialog = new DatePickerDialog(this);
-            dialog.setOnDateSetListener((datePicker, year, month, day) -> date = day + "/" + (month + 1) + "/" + year);
-            dialog.show();
-        });
-        delete.setOnClickListener(new View.OnClickListener() {
+
+        datePicker.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                executorService.execute(() -> {
-                    database.userDao().delete(Integer.parseInt(editTextText.getText().toString()));
+                DatePickerDialog datePickerDialog = new DatePickerDialog(MainActivity.this);
+                datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
+                    @Override
+                    public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
+                        dateString = i + "/" + (i1 + 1) + "/" + i2;
+                    }
                 });
+                datePickerDialog.show();
+
             }
         });
 
-        submit.setOnClickListener(view -> {
-            UserData userObject = new UserData();
-            userObject.Username = editTextText.getText().toString();
-            userObject.dateOfbirth = date;
-            executorService.execute(() -> {
-                database.userDao().insert(userObject);
-            });
-        });
-        database.userDao().getAllUsers().observe(this, new Observer<List<UserData>>() {
+        timePicker.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onChanged(List<UserData> userData) {
-                StringBuilder result = new StringBuilder();
-                for (UserData user : userData) {
-                    result.append(user.srno + "-" + user.Username + "-" + user.dateOfbirth + "\n");
-                }
-                TextView textView = findViewById(R.id.result);
-                textView.setText(result.toString());
+            public void onClick(View view) {
+                TimePickerDialog timePickerDialog = new TimePickerDialog(MainActivity.this, new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker timePicker, int i, int i1) {
+                        timeString = i + ":" + i1;
+                    }
+                }, 0, 0, true);
+                timePickerDialog.show();
+
+            }
+        });
+        write.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                String result = dateString + "\n" + timeString;
+                InternalStorage internalStorage = new InternalStorage();
+                internalStorage.writeToFile(MainActivity.this, result);
             }
         });
 
+        read.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                InternalStorage internalStorage = new InternalStorage();
+                result.setText(internalStorage.readFromFile(MainActivity.this));
+            }
+        });
     }
 
 }
