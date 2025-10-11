@@ -5,9 +5,7 @@ import android.app.TimePickerDialog;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.DatePicker;
 import android.widget.TextView;
-import android.widget.TimePicker;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,11 +17,15 @@ public class MainActivity extends AppCompatActivity {
 
     String dateString = "";
     String timeString = "";
+    InternalStorage internalStorage = new InternalStorage();
+    SharedPreferencesStorage sharedPreferencesStorage;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        sharedPreferencesStorage = new SharedPreferencesStorage(this);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -42,12 +44,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 DatePickerDialog datePickerDialog = new DatePickerDialog(MainActivity.this);
-                datePickerDialog.setOnDateSetListener(new DatePickerDialog.OnDateSetListener() {
-                    @Override
-                    public void onDateSet(DatePicker datePicker, int i, int i1, int i2) {
-                        dateString = i + "/" + (i1 + 1) + "/" + i2;
-                    }
-                });
+                datePickerDialog.setOnDateSetListener((datePicker1, i, i1, i2) -> dateString = i + "/" + (i1 + 1) + "/" + i2);
                 datePickerDialog.show();
 
             }
@@ -56,12 +53,7 @@ public class MainActivity extends AppCompatActivity {
         timePicker.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                TimePickerDialog timePickerDialog = new TimePickerDialog(MainActivity.this, new TimePickerDialog.OnTimeSetListener() {
-                    @Override
-                    public void onTimeSet(TimePicker timePicker, int i, int i1) {
-                        timeString = i + ":" + i1;
-                    }
-                }, 0, 0, true);
+                TimePickerDialog timePickerDialog = new TimePickerDialog(MainActivity.this, (timePicker1, i, i1) -> timeString = i + ":" + i1, 0, 0, true);
                 timePickerDialog.show();
 
             }
@@ -70,16 +62,16 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 String result = dateString + "\n" + timeString;
-                InternalStorage internalStorage = new InternalStorage();
-                internalStorage.writeToFile(MainActivity.this, result);
+//                internalStorage.writeToFile(MainActivity.this, result);
+                sharedPreferencesStorage.saveUserData(result);
             }
         });
 
         read.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                InternalStorage internalStorage = new InternalStorage();
-                result.setText(internalStorage.readFromFile(MainActivity.this));
+//                result.setText(internalStorage.readFromFile(MainActivity.this));
+                result.setText(sharedPreferencesStorage.fetchUserData());
             }
         });
     }
